@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FireDeck · control de Fire TV</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%94%A5%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<div class="glow glow-a"></div>
+<div class="glow glow-b"></div>
+
+<div class="shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">🔥</div>
+      <div>
+        <h1>FireDeck</h1>
+        <p>Tu Fire TV, desde el navegador</p>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button class="device-chip" id="deviceChip" title="Gestionar conexión">
+        <span class="dot" id="statusDot"></span>
+        <span class="device-text">
+          <strong id="deviceName">Sin conectar</strong>
+          <small id="deviceMeta">Pulsa para configurar</small>
+        </span>
+      </button>
+      <button class="btn btn-primary" id="connectBtn">Conectar</button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-view="control">Control</button>
+    <button class="tab" data-view="apps">Apps</button>
+    <button class="tab" data-view="system">Sistema</button>
+    <button class="tab" data-view="files">Archivos</button>
+    <button class="tab" data-view="device">Dispositivo</button>
+    <button class="tab" data-view="network">Red</button>
+    <button class="tab" data-view="install">Instalar APK</button>
+    <button class="tab" data-view="storage">Almacenamiento</button>
+    <button class="tab" data-view="console">Consola</button>
+  </nav>
+
+  <main>
+    <!-- ============================ CONTROL ============================ -->
+    <section class="view active" id="view-control">
+      <div class="control-grid">
+        <article class="card screen-card">
+          <div class="card-head">
+            <h2>Pantalla</h2>
+            <div class="head-actions">
+              <label class="switch">
+                <input type="checkbox" id="liveToggle">
+                <span>En vivo</span>
+              </label>
+              <button class="icon-btn" id="shotBtn" title="Actualizar captura">⟳</button>
+            </div>
+          </div>
+          <div class="screen" id="screenBox">
+            <img id="screenImg" alt="Captura del Fire TV">
+            <canvas id="screenCanvas" aria-label="Espejo en vivo del Fire TV"></canvas>
+            <div class="mirror-badge" id="mirrorBadge"></div>
+            <div class="screen-empty" id="screenEmpty">
+              <span>📺</span>
+              <p>Conecta tu Fire TV para ver la pantalla</p>
+            </div>
+            <div class="screen-loading" id="screenLoading">Capturando…</div>
+            <div class="screen-notice" id="screenNotice">
+              <span>🌑</span>
+              <p id="screenNoticeText">La captura sale en negro.</p>
+            </div>
+          </div>
+          <div class="record-bar" id="recordBar">
+            <div class="record-info">
+              <span class="rec-dot" id="recDot"></span>
+              <div>
+                <strong id="recStatus">Grabar pantalla</strong>
+                <small id="recMeta">MP4 · hasta 60 s</small>
+              </div>
+            </div>
+            <div class="record-actions">
+              <select class="field rec-select" id="recDuration" aria-label="Duración de la grabación">
+                <option value="15">15 s</option>
+                <option value="30" selected>30 s</option>
+                <option value="60">60 s</option>
+              </select>
+              <button class="btn btn-ghost" id="recBtn">Grabar</button>
+              <button class="btn btn-primary hidden" id="recDownload">Descargar vídeo</button>
+            </div>
+          </div>
+          <p class="hint">
+            Haz clic sobre la imagen para tocar el Fire TV y arrastra para deslizar.
+            «En vivo» abre un espejo H.264 continuo (se ve la pantalla al instante y se
+            actualiza al cambiar); si el navegador no lo soporta, cae a capturas cada 2 s.
+            Fire OS no deja capturar la capa de vídeo ni el contenido con DRM.
+          </p>
+        </article>
+
+        <article class="card remote-card">
+          <div class="card-head">
+            <h2>Control remoto</h2>
+            <span class="kbd-hint">Atajos: flechas · Enter · Backspace</span>
+          </div>
+
+          <div class="remote-top">
+            <button class="rbtn rbtn-ghost" data-key="power" title="Encendido / apagado" aria-label="Encendido">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v9"/><path d="M6.3 6.3a8 8 0 1 0 11.4 0"/></svg>
+            </button>
+            <button class="rbtn rbtn-ghost" data-key="settings" title="Ajustes">⚙</button>
+            <button class="rbtn rbtn-ghost" data-key="home" title="Inicio">⌂</button>
+          </div>
+
+          <div class="dpad">
+            <button class="rbtn dpad-up" data-key="up" aria-label="Arriba">▲</button>
+            <button class="rbtn dpad-left" data-key="left" aria-label="Izquierda">◀</button>
+            <button class="rbtn dpad-ok" data-key="center" aria-label="OK">OK</button>
+            <button class="rbtn dpad-right" data-key="right" aria-label="Derecha">▶</button>
+            <button class="rbtn dpad-down" data-key="down" aria-label="Abajo">▼</button>
+          </div>
+
+          <div class="remote-mid">
+            <button class="rbtn rbtn-ghost" data-key="back" title="Atrás">↩</button>
+            <button class="rbtn rbtn-ghost" data-key="menu" title="Menú">☰</button>
+            <button class="rbtn rbtn-ghost" data-key="search" title="Buscar">🔍</button>
+          </div>
+
+          <div class="remote-media">
+            <button class="rbtn rbtn-ghost" data-key="previous" title="Anterior">⏮</button>
+            <button class="rbtn rbtn-ghost" data-key="rewind" title="Rebobinar">⏪</button>
+            <button class="rbtn rbtn-accent" data-key="play_pause" title="Reproducir / pausar">⏯</button>
+            <button class="rbtn rbtn-ghost" data-key="fast_forward" title="Avanzar">⏩</button>
+            <button class="rbtn rbtn-ghost" data-key="next" title="Siguiente">⏭</button>
+          </div>
+
+          <div class="remote-volume">
+            <button class="rbtn rbtn-ghost" data-key="volume_down" title="Bajar volumen">−</button>
+            <button class="rbtn rbtn-ghost" data-key="mute" title="Silenciar">🔇</button>
+            <button class="rbtn rbtn-ghost" data-key="volume_up" title="Subir volumen">+</button>
+          </div>
+
+          <form class="text-form" id="textForm">
+            <input type="text" class="field" id="textInput" placeholder="Escribir en el Fire TV…" autocomplete="off">
+            <button class="btn btn-primary" type="submit">Enviar</button>
+          </form>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============================== APPS ============================== -->
+    <section class="view" id="view-apps">
+      <article class="card">
+        <div class="card-head wrap">
+          <div>
+            <h2>Apps instaladas</h2>
+            <p class="sub" id="appsCount">Conecta el dispositivo para listar apps</p>
+          </div>
+          <div class="head-actions">
+            <input class="field search" id="appSearch" type="search" placeholder="Buscar nombre o paquete…">
+            <label class="check">
+              <input type="checkbox" id="systemToggle">
+              <span>Sistema</span>
+            </label>
+            <button class="btn btn-ghost" id="appsRefresh">Actualizar</button>
+          </div>
+        </div>
+        <div class="app-list" id="appList">
+          <div class="empty-state">
+            <span>📦</span>
+            <p>Pulsa «Actualizar» para cargar las apps del Fire TV.</p>
+          </div>
+        </div>
+        <p class="hint">
+          Los iconos se extraen del APK instalado en el Fire TV (la primera vez tarda unos
+          segundos y queda en caché). Con «Info» ves la versión, el tamaño y el APK; desde ahí
+          puedes descargar el APK —o un ZIP con los APK divididos— y ponerle un nombre propio.
+          Pulsa el identificador para copiarlo.
+        </p>
+      </article>
+    </section>
+
+    <!-- ============================= SISTEMA ============================ -->
+    <section class="view" id="view-system">
+      <article class="card">
+        <div class="card-head wrap">
+          <div>
+            <h2>Apps del sistema</h2>
+            <p class="sub" id="systemCount">Conecta el dispositivo para listar apps del sistema</p>
+          </div>
+          <div class="head-actions">
+            <input class="field search" id="systemSearch" type="search" placeholder="Buscar nombre o paquete…">
+            <label class="check" title="Muestra solo apps opcionales y las que ya están desactivadas">
+              <input type="checkbox" id="systemSafeOnly" checked>
+              <span>Solo seguras</span>
+            </label>
+            <button class="btn btn-ghost" id="systemRefresh">Actualizar</button>
+            <button class="btn btn-ghost" id="systemRestore" disabled>Restaurar desactivadas</button>
+          </div>
+        </div>
+
+        <div class="debloat-note">
+          <strong>Sin root y sin borrar nada.</strong>
+          Desactivar una app la oculta del Fire TV (<code>pm disable-user</code>) pero conserva su
+          APK: puedes reactivarla cuando quieras. Las apps críticas están bloqueadas.
+        </div>
+
+        <div class="app-list" id="systemList">
+          <div class="empty-state">
+            <span>⚙️</span>
+            <p>Pulsa «Actualizar» para cargar las apps del sistema.</p>
+          </div>
+        </div>
+
+        <p class="hint">
+          «Solo seguras» muestra las apps opcionales (Amazon Music, Silk, compras…) y también las
+          que ya hayas desactivado, para que puedas reactivarlas. Desmarca la casilla para ver
+          todos los servicios del sistema. El estado se lee del propio Fire TV; el registro de lo
+          desactivado se guarda en <code>debloat.json</code> en este PC.
+        </p>
+      </article>
+    </section>
+
+    <!-- ============================= ARCHIVOS ============================ -->
+    <section class="view" id="view-files">
+      <article class="card">
+        <div class="card-head wrap">
+          <div>
+            <h2>Archivos del Fire TV</h2>
+            <p class="sub" id="filesMeta">Carpeta compartida <code>/sdcard</code></p>
+          </div>
+          <div class="head-actions">
+            <button class="btn btn-ghost" id="filesRefresh">Actualizar</button>
+            <button class="btn btn-ghost" id="filesMkdir">Nueva carpeta</button>
+            <button class="btn btn-primary" id="filesUpload">Subir archivos</button>
+            <input type="file" id="filesInput" multiple hidden>
+          </div>
+        </div>
+
+        <div class="files-nav">
+          <button class="icon-btn" id="filesUp" title="Subir un nivel" disabled>↑</button>
+          <nav class="breadcrumb" id="filesBreadcrumb" aria-label="Ruta actual"></nav>
+        </div>
+
+        <div class="file-list" id="fileList">
+          <div class="empty-state">
+            <span>📂</span>
+            <p>Pulsa «Actualizar» para explorar los archivos del Fire TV.</p>
+          </div>
+        </div>
+
+        <div class="progress hidden" id="filesProgress"><div class="bar" id="filesBar"></div></div>
+        <p class="file-status hidden" id="filesStatus"></p>
+
+        <p class="hint">
+          Navega por la carpeta compartida del Fire TV (<code>/sdcard</code>). Pulsa una
+          carpeta para entrar; en los archivos puedes descargarlos, renombrarlos o borrarlos.
+          También puedes arrastrar archivos desde el PC a la lista para subirlos. Nada sale
+          de tu red local. Android protege algunas carpetas del sistema: si una operación
+          falla, lo verás explicado.
+        </p>
+      </article>
+    </section>
+
+    <!-- ============================ DEVICE ============================= -->
+    <section class="view" id="view-device">
+      <article class="card">
+        <div class="card-head wrap">
+          <div>
+            <h2>Ficha del dispositivo</h2>
+            <p class="sub">Datos leídos del Fire TV por ADB, sin tocar su configuración</p>
+          </div>
+          <button class="btn btn-ghost" id="deviceRefresh">Actualizar</button>
+        </div>
+
+        <div class="device-hero" id="deviceHero">
+          <div class="device-hero-icon">📺</div>
+          <div>
+            <strong id="deviceHeroName">Sin conectar</strong>
+            <small id="deviceHeroMeta">Conecta un Fire TV para ver sus datos.</small>
+          </div>
+        </div>
+
+        <div class="info-grid" id="deviceInfoGrid">
+          <div class="info-placeholder">Pulsa «Actualizar» para leer la ficha del dispositivo.</div>
+        </div>
+
+        <p class="hint">
+          La temperatura y el uso de CPU son una foto del momento. Algunos modelos no
+          publican sensores térmicos; en ese caso la tarjeta aparece como «No disponible».
+        </p>
+      </article>
+    </section>
+
+    <!-- ============================== RED =============================== -->
+    <section class="view" id="view-network">
+      <article class="card">
+        <div class="card-head wrap">
+          <div>
+            <h2>Red del Fire TV</h2>
+            <p class="sub" id="netMeta">Conexión ADB, Wi-Fi e IP del dispositivo seleccionado</p>
+          </div>
+          <div class="head-actions">
+            <button class="btn btn-ghost" id="netRefresh">Comprobar ahora</button>
+            <button class="btn btn-ghost" id="netReconnect">Reconectar ADB</button>
+            <button class="btn btn-primary" id="netScan">Buscar de nuevo</button>
+          </div>
+        </div>
+
+        <div class="net-banner hidden" id="netBanner">
+          <span id="netBannerIcon">📡</span>
+          <div>
+            <strong id="netBannerTitle">La IP del Fire TV cambió</strong>
+            <p id="netBannerText"></p>
+          </div>
+        </div>
+
+        <div class="net-hero" id="netHero">
+          <div class="net-hero-main">
+            <span class="dot" id="netDot"></span>
+            <div>
+              <strong id="netName">Sin conectar</strong>
+              <small id="netAddress">Conecta un Fire TV para ver su red.</small>
+            </div>
+          </div>
+          <div class="net-hero-stats">
+            <div>
+              <small>Latencia PC → TV</small>
+              <strong id="netLatency">—</strong>
+            </div>
+            <div>
+              <small>Señal Wi-Fi</small>
+              <strong id="netSignal">—</strong>
+            </div>
+            <div>
+              <small>Comprobado</small>
+              <strong id="netChecked">—</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-grid" id="netGrid">
+          <div class="info-placeholder">
+            Pulsa «Comprobar ahora» para leer el estado de red del Fire TV.
+          </div>
+        </div>
+
+        <div class="net-notes" id="netNotes"></div>
+
+        <div class="net-saved">
+          <div class="saved-head">
+            <h3>Dispositivos guardados</h3>
+            <span>El router puede cambiarles la IP con el DHCP</span>
+          </div>
+          <div class="net-saved-list" id="netSaved"></div>
+        </div>
+
+        <p class="hint">
+          La latencia PC → TV se mide con el saludo TCP del puerto ADB. El SSID, la señal y
+          los pings se leen del propio Fire TV, sin root. <strong>Buscar de nuevo</strong>
+          recorre la red local y reconoce cada equipo por su número de serie, así que vuelve
+          a encontrar tu Fire TV aunque el router le haya dado otra IP. Fire TV no admite
+          Wake-on-LAN: si está apagado del todo, no se puede encender desde aquí.
+        </p>
+      </article>
+    </section>
+
+    <!-- ============================= INSTALL ============================ -->
+    <section class="view" id="view-install">
+      <div class="install-grid">
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <h2>Instalar una app</h2>
+              <p class="sub">Descárgala con un código de Downloader o una URL, o sube el archivo.</p>
+            </div>
+          </div>
+
+          <form class="dl-form" id="dlForm">
+            <input class="field" id="dlInput" type="text" autocomplete="off" spellcheck="false"
+                   placeholder="Código de Downloader (p. ej. 1234567), URL https://… o enlace de MediaFire">
+            <button class="btn btn-ghost" type="submit" id="dlResolveBtn">Resolver</button>
+          </form>
+
+          <div class="file-card hidden" id="dlPreview">
+            <div class="file-icon" id="dlIcon">APK</div>
+            <div class="file-info">
+              <strong id="dlName">—</strong>
+              <small id="dlMeta">—</small>
+              <small id="dlHost" class="file-hint"></small>
+            </div>
+          </div>
+
+          <div class="dl-actions">
+            <button class="btn btn-primary" id="dlInstallBtn" disabled>Descargar e instalar</button>
+            <button class="btn btn-ghost hidden" id="dlCancelBtn">Cancelar</button>
+          </div>
+          <div class="progress hidden" id="dlProgress"><div class="bar" id="dlBar"></div></div>
+          <pre class="log hidden" id="dlLog"></pre>
+          <div class="dl-history" id="dlHistory"></div>
+          <p class="hint">
+            El código se resuelve con el redirector de AFTVnews, el mismo que usa la app
+            Downloader. También puedes pegar un enlace directo o la página de un archivo de
+            MediaFire: FireDeck saca el enlace real de descarga por ti.
+          </p>
+
+          <div class="install-divider"><span>o sube un archivo</span></div>
+
+          <div class="dropzone" id="dropzone">
+            <input type="file" id="apkInput" accept=".apk,.apks,.xapk,.apkm,.zip" hidden>
+            <span class="drop-icon">⬆</span>
+            <p><strong>Arrastra el APK o paquete aquí</strong> o pulsa para elegirlo</p>
+            <small>APK, APKS, XAPK o APKM · se instala con <code>adb install</code> o <code>install-multiple</code></small>
+          </div>
+          <div class="file-card hidden" id="fileCard">
+            <div class="file-icon" id="fileIcon">APK</div>
+            <div class="file-info">
+              <strong id="fileName">app.apk</strong>
+              <small id="fileSize">—</small>
+              <small id="fileHint" class="file-hint"></small>
+            </div>
+            <button class="icon-btn" id="clearFile" title="Quitar">✕</button>
+          </div>
+          <div class="progress hidden" id="installProgress"><div class="bar" id="installBar"></div></div>
+          <button class="btn btn-primary wide" id="installBtn" disabled>Instalar en el Fire TV</button>
+          <pre class="log hidden" id="installLog"></pre>
+        </article>
+
+        <article class="card side-note">
+          <h2>Antes de instalar</h2>
+          <ul class="notes">
+            <li>El APK debe ser compatible con Android TV / Fire OS (no vale un APK de móvil cualquiera).</li>
+            <li>Fire OS 7 acepta <code>adb connect IP:5555</code>. Fire OS 8 necesita emparejamiento con código.</li>
+            <li>Si la instalación falla con <code>INSTALL_FAILED_UPDATE_INCOMPATIBLE</code>, desinstala antes la versión existente.</li>
+            <li>Arquitectura de tu Fire TV: <strong id="deviceAbi">—</strong>. Si el APK solo trae <code>arm64-v8a</code> o <code>x86</code>, no instalará (<code>INSTALL_FAILED_NO_MATCHING_ABIS</code>).</li>
+            <li>Los paquetes divididos (<code>.apks</code>, XAPK, APKM) se instalan con <code>adb install-multiple</code>: FireDeck elige la base y los splits de tu arquitectura e ignora los de otras.</li>
+            <li>Los OBB que a veces incluye un XAPK no se instalan. Si la app los necesita, cópialos a <code>/sdcard/Android/obb/&lt;paquete&gt;/</code> desde <strong>Archivos</strong>.</li>
+            <li>FireDeck comprueba que todos los APK pertenecen al mismo paquete y comparten firma antes de enviarlos.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============================ STORAGE ============================ -->
+    <section class="view" id="view-storage">
+      <article class="card">
+        <div class="card-head">
+          <div>
+            <h2>Almacenamiento interno</h2>
+            <p class="sub">Datos del Fire TV en <code>/data</code></p>
+          </div>
+          <button class="btn btn-ghost" id="storageRefresh">Actualizar</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><small>Total</small><strong id="statTotal">—</strong></div>
+          <div class="stat"><small>Usado</small><strong id="statUsed">—</strong></div>
+          <div class="stat accent"><small>Disponible</small><strong id="statAvail">—</strong></div>
+        </div>
+
+        <div class="trim-box">
+          <div>
+            <h3>Liberar caché</h3>
+            <p>Pide a Android que recorte la caché de las apps. No borra tus datos ni tus cuentas.</p>
+          </div>
+          <button class="btn btn-primary" id="trimBtn">Liberar caché ahora</button>
+        </div>
+
+        <details class="raw">
+          <summary>Salida de <code>df -h /data</code></summary>
+          <pre id="storageRaw">—</pre>
+        </details>
+
+        <p class="hint warning">
+          ⚠️ Fire OS 7 no permite borrar la caché de una app concreta por ADB sin root.
+          Para una app específica puedes usar «Borrar datos» en la pestaña Apps, pero eso
+          cierra la sesión y elimina su configuración.
+        </p>
+      </article>
+    </section>
+
+    <!-- ============================ CONSOLE ============================ -->
+    <section class="view" id="view-console">
+      <article class="card">
+        <div class="card-head">
+          <div>
+            <h2>Consola ADB</h2>
+            <p class="sub">Comandos ejecutados con <code>adb shell</code></p>
+          </div>
+          <button class="btn btn-ghost" id="clearConsole">Limpiar</button>
+        </div>
+
+        <div class="quick-row" id="quickRow">
+          <button class="chip" data-cmd="pm list packages -3">apps de usuario</button>
+          <button class="chip" data-cmd="getprop ro.product.model">modelo</button>
+          <button class="chip" data-cmd="dumpsys deviceidle | head -40">estado de energía</button>
+          <button class="chip" data-cmd="top -n 1 -b | head -25">procesos</button>
+          <button class="chip" data-cmd="logcat -d -t 150">últimos logs</button>
+        </div>
+
+        <pre class="console" id="consoleOut"><span class="muted">$ listo. Los comandos se envían al Fire TV conectado.</span></pre>
+
+        <form class="console-form" id="consoleForm">
+          <span class="prompt">$</span>
+          <input type="text" class="field" id="consoleInput" placeholder="getprop ro.build.version.name" autocomplete="off" spellcheck="false">
+          <button class="btn btn-primary" type="submit">Ejecutar</button>
+        </form>
+
+        <div class="danger-zone">
+          <div>
+            <strong>Zona peligrosa</strong>
+            <p>Reinicia el Fire TV. La conexión ADB se perderá hasta que vuelva a encenderse.</p>
+          </div>
+          <button class="btn btn-danger" id="rebootBtn">Reiniciar Fire TV</button>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>FireDeck · corre en tu PC, no envía nada a internet</span>
+    <button class="link-btn" id="helpBtn">Cómo activar ADB en el Fire TV</button>
+  </footer>
+</div>
+
+<!-- ============================== MODAL ============================== -->
+<dialog class="modal" id="connectModal">
+  <form method="dialog" class="modal-inner" id="connectForm">
+    <div class="modal-head">
+      <div>
+        <h2 id="modalTitle">Conectar Fire TV</h2>
+        <p>Mismo Wi-Fi que este equipo. La IP está en Ajustes → Mi Fire TV → Red.</p>
+      </div>
+      <button class="icon-btn" type="button" id="closeConnect" title="Cerrar">✕</button>
+    </div>
+
+    <section class="saved-devices hidden" id="savedDevices">
+      <div class="saved-head">
+        <h3>Dispositivos guardados</h3>
+        <span>Pulsa uno para conectarte</span>
+      </div>
+      <div class="saved-list" id="savedList"></div>
+      <p class="hint">Con ✎ le pones un nombre fácil de recordar. La lista se guarda en este PC.</p>
+    </section>
+
+    <div class="tab-info" id="tabInfo"></div>
+
+    <label class="label" for="hostInput">IP del Fire TV</label>
+    <div class="row">
+      <input class="field" id="hostInput" placeholder="192.168.1.50" autocomplete="off" inputmode="decimal">
+      <input class="field port" id="portInput" value="5555" inputmode="numeric" aria-label="Puerto">
+      <button class="btn btn-ghost" type="button" id="discoverBtn">Detectar</button>
+    </div>
+    <div class="discover-results hidden" id="discoverResults"></div>
+
+    <div class="device-list hidden" id="deviceList"></div>
+
+    <label class="check pair-toggle">
+      <input type="checkbox" id="pairToggle">
+      <span>Fire OS 8: requiere emparejamiento con código</span>
+    </label>
+
+    <div class="pair-fields hidden" id="pairFields">
+      <div class="row">
+        <div class="col">
+          <label class="label" for="pairPort">Puerto de emparejamiento</label>
+          <input class="field" id="pairPort" value="5555" inputmode="numeric">
+        </div>
+        <div class="col">
+          <label class="label" for="pairCode">Código de 6 dígitos</label>
+          <input class="field" id="pairCode" placeholder="123456" inputmode="numeric" maxlength="6">
+        </div>
+      </div>
+      <p class="hint">En el Fire TV: Ajustes → Mi Fire TV → Opciones de desarrollador → Depuración ADB → Emparejar dispositivo. Copia el <strong>puerto</strong> que aparece ahí (no suele ser 5555) y deja ese diálogo abierto.</p>
+    </div>
+
+    <p class="modal-error hidden" id="modalError"></p>
+    <pre class="diag-output hidden" id="diagOutput"></pre>
+
+    <section class="auth-help hidden" id="authHelp">
+      <h3>El Fire TV rechazó la clave de este PC</h3>
+      <ol class="steps">
+        <li>Enciende el televisor y déjalo despierto durante la conexión.</li>
+        <li>Si es <strong>Fire OS 8</strong>, empareja con el código: activa «Emparejar dispositivo», usa el puerto que muestra y marca la casilla de emparejamiento antes de conectar.</li>
+        <li>En el Fire TV: <strong>Ajustes → Mi Fire TV → Opciones de desarrollador</strong> y pulsa <strong>Revocar autorizaciones de depuración USB</strong> (si existe).</li>
+        <li>Pulsa <strong>Reiniciar ADB</strong> y vuelve a conectar. Si sigue igual, <strong>Generar clave nueva</strong>.</li>
+        <li>En el televisor saldrá <strong>¿Permitir depuración USB?</strong>: marca <strong>Permitir siempre</strong> y acepta con el mando.</li>
+      </ol>
+      <div class="auth-actions">
+        <button class="btn btn-ghost" type="button" id="repairAdb">Reiniciar ADB</button>
+        <button class="btn btn-ghost" type="button" id="resetKey">Generar clave nueva</button>
+      </div>
+      <p class="hint hidden" id="authOutput"></p>
+    </section>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" type="button" id="diagBtn">Diagnóstico</button>
+      <button class="btn btn-ghost hidden" type="button" id="disconnectBtn">Desconectar</button>
+      <button class="btn btn-ghost" value="cancel" formnovalidate type="button" id="cancelConnect">Cancelar</button>
+      <button class="btn btn-primary" type="submit" id="doConnect">Conectar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="modal" id="helpModal">
+  <div class="modal-inner">
+    <div class="modal-head">
+      <div>
+        <h2>Activar depuración ADB</h2>
+        <p>Necesario una sola vez en el Fire TV.</p>
+      </div>
+      <button class="icon-btn" id="helpClose" title="Cerrar">✕</button>
+    </div>
+    <ol class="steps">
+      <li>Ajustes → <strong>Mi Fire TV</strong> → <strong>Acerca de</strong>.</li>
+      <li>Pulsa 7 veces sobre <strong>Build</strong> hasta que diga «Ya eres desarrollador».</li>
+      <li>Vuelve y entra en <strong>Opciones de desarrollador</strong>.</li>
+      <li>Activa <strong>Depuración ADB</strong>.</li>
+      <li>Anota la IP en <strong>Ajustes → Mi Fire TV → Red</strong>.</li>
+      <li>Conecta desde FireDeck. Acepta el aviso en la TV si aparece.</li>
+    </ol>
+    <p class="hint">Fire OS 8 (Fire TV Stick 4K Max 2ª gen, Cube 3ª gen…) usa emparejamiento:
+      activa «Depuración inalámbrica», entra en «Emparejar dispositivo» y usa el puerto y código que muestra.</p>
+  </div>
+</dialog>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="/static/mirror.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

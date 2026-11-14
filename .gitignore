@@ -1,0 +1,24 @@
+# Datos locales de cada usuario (IPs, nombres de equipos, historial). No subir.
+devices.json
+debloat.json
+downloader.json
+*.json.tmp
+
+# Caché generada (iconos extraídos de los APK) y registros
+.cache/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+
+# adb descargado por --download-adb
+platform-tools/
+
+# Temporales de subida/descarga y editores
+firedeck_upload_*
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
