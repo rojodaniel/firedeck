@@ -913,6 +913,20 @@ class UnexpectedErrorLoggingTests(unittest.TestCase):
         self.assertEqual(sent, [({"ok": False, "error": "fallo esperado"}, 400)])
         self.assertEqual(text, "")
 
+    def test_guard_ignores_browser_disconnects(self):
+        # Caso real del log: ConnectionAbortedError 10053 al cerrar una pestaña.
+        for error in (ConnectionAbortedError(10053, "anulada"), BrokenPipeError(),
+                      ConnectionResetError()):
+            handler, sent = self.make_handler()
+
+            def drop(error=error):
+                raise error
+
+            _, text = self.capture(lambda: app.Handler.guard(handler, drop))
+            self.assertEqual(sent, [], "no se responde por una conexión ya cerrada")
+            self.assertEqual(text, "", "y tampoco se registra como fallo")
+            self.assertTrue(handler.close_connection)
+
     def test_network_errors_are_covered_by_the_narrowed_adb_download_catch(self):
         # El arranque solo captura (OSError, BadZipFile, RuntimeError): un fallo de
         # red es URLError, que hereda de OSError; un bug (TypeError) no se oculta.

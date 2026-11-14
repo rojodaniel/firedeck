@@ -464,7 +464,7 @@ firedeck/
 ├── README.md
 ├── tests/
 │   ├── apkbuild.py     genera APK, manifiestos binarios y firmas sintéticos
-│   └── test_parsers.py pruebas de los parseos (91 casos, solo stdlib)
+│   └── test_parsers.py pruebas de los parseos (92 casos, solo stdlib)
 ├── tools/
 │   └── asar-extract.js script suelto para extraer archivos .asar (Node)
 └── static/

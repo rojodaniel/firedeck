@@ -5874,6 +5874,10 @@ class Handler(BaseHTTPRequestHandler):
             if getattr(exc, "hint", None):
                 payload["hint"] = exc.hint
             self.send_json(payload, 400)
+        except ConnectionError:
+            # El navegador cerró la conexión (pestaña recargada o cerrada) a
+            # mitad de la respuesta. No es un fallo ni hay a quién responder.
+            self.close_connection = True
         except Exception as exc:  # noqa: BLE001
             log_unexpected("Error inesperado", exc)
             self.send_json({"ok": False, "error": f"Error interno: {exc}"}, 500)
