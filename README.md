@@ -509,3 +509,11 @@ accede por IP o añade esa excepción en `request_allowed()`.
 La descarga por código o URL solo acepta `http`/`https`, valida el DNS en cada redirección y
 rechaza direcciones privadas, locales y reservadas. Así, un enlace malicioso no puede usar el
 servidor de FireDeck para leer la red doméstica ni servicios que escuchen en `localhost`.
+
+## Licencia
+
+MIT. Consulta el archivo [LICENSE](LICENSE).
+
+## Aviso
+
+FireDeck es un proyecto independiente y no tiene relación con Amazon. Fire TV, Fire OS y Amazon son marcas de sus respectivos dueños. Úsalo solo con dispositivos tuyos o con permiso de su dueño.
